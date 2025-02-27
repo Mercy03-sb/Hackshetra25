@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())  
+  name           String  
+  email          String   @unique  
+  password       String  
+  profilePicture String?  
+  bio            String?  
+  subjects       String[]  
+  role           Role     @default(STUDENT)  
+  points         Int      @default(0)  
+  createdAt      DateTime @default(now())  
+  updatedAt      DateTime @updatedAt  
+
+  // Relationships
+  studyMaterials StudyMaterial[]  
+  messages       Message[]  
+  sessions       Session[]  
+  recommendations Recommendation[]  
+}
+
+model StudyMaterial {
+  id        String   @id @default(uuid())  
+  title     String  
+  content   String  
+  fileUrl   String?  
+  author    User     @relation(fields: [authorId], references: [id])  
+  authorId  String  
+  createdAt DateTime @default(now())  
+
+  recommendations Recommendation[]  
+}
+
+model Message {
+  id        String   @id @default(uuid())  
+  content   String  
+  sender    User     @relation(fields: [senderId], references: [id])  
+  senderId  String  
+  createdAt DateTime @default(now())  
+}
+
+model Session {
+  id          String   @id @default(uuid())  
+  topic       String  
+  tutor       User     @relation(fields: [tutorId], references: [id])  
+  tutorId     String  
+  scheduledAt DateTime  
+  createdAt   DateTime @default(now())  
+}
+
+model Recommendation {
+  id        String   @id @default(uuid())  
+  user      User     @relation(fields: [userId], references: [id])  
+  userId    String  
+  material  StudyMaterial @relation(fields: [materialId], references: [id])  
+  materialId String  
+  createdAt DateTime @default(now())  
+}
+
+enum Role {
+  STUDENT
+  MENTOR
+  ADMIN
+}
